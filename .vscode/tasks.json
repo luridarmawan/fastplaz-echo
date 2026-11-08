@@ -12,7 +12,7 @@
     {
       "label": "Build API (Cross Compile Linux)",
       "type": "shell",
-      "command": "cd source/echo && fpc echo.lpr @extra.cfg -TLinux",
+      "command": "cd source/echo && mkdir -p lib/x86_64-linux && fpc echo.lpr @extra.cfg -TLinux",
       "problemMatcher": []
     },
     {
