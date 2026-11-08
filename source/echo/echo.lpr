@@ -3,10 +3,11 @@ program echo;
 {$mode objfpc}{$H+}
 
 uses
-  fpcgi, sysutils, fastplaz_handler, common, main, routes;
+  {$IFNDEF Windows}cthreads, {$ENDIF}
+  fastplaz_app, sysutils, fastplaz_handler, common, main, routes;
 
 begin
-  Application.Title:='Echo';
+  Application.Title := string( Config.GetValue(_SYSTEM_SITENAME, 'Echo'));
   Application.Email := string( Config.GetValue(_SYSTEM_WEBMASTER_EMAIL,'webmaster@' + GetEnvironmentVariable('SERVER_NAME')));
   Application.DefaultModuleName := string( Config.GetValue(_SYSTEM_MODULE_DEFAULT, 'main'));
   Application.ModuleVariable := string( Config.GetValue(_SYSTEM_MODULE_VARIABLE, 'mod'));
@@ -16,9 +17,12 @@ begin
 
   Application.OnGetModule := @FastPlasAppandler.OnGetModule;
   Application.PreferModuleName := True;
-  {$if FPC_FULlVERSION >= 30004}
+  {$if FPC_FULLVERSION >= 30004}
   Application.LegacyRouting := True;
   {$endif}
+
+  // startup banner, standalone mode only; see OnStandaloneBanner to change it
+  ShowStandaloneBanner;
 
   Application.Initialize;
   Application.Run;

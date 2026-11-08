@@ -13,3 +13,22 @@ variable=value
 
 
 
+###  Put Example
+
+PUT http://course.fastplaz.test/?id=1
+Content-Type: application/json
+
+{"name": "value"}
+
+
+###  Patch Example
+
+PATCH http://course.fastplaz.test/?id=1
+Content-Type: application/x-www-form-urlencoded
+
+name=value
+
+
+###  Delete Example
+
+DELETE http://course.fastplaz.test/?id=1

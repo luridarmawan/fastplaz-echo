@@ -1,4 +1,4 @@
 #!/bin/bash
-mkdir lib
+mkdir -p lib
 fpc echo.lpr @extra.cfg
 

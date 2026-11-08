@@ -27,13 +27,10 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="2">
+    <RequiredPackages Count="1">
       <Item1>
-        <PackageName Value="LCL"/>
-      </Item1>
-      <Item2>
         <PackageName Value="fastplaz_runtime"/>
-      </Item2>
+      </Item1>
     </RequiredPackages>
     <Units Count="3">
       <Unit0>
@@ -53,7 +50,7 @@
   <CompilerOptions>
     <Version Value="11"/>
     <Target>
-      <Filename Value="../../public_html/echo.bin"/>
+      <Filename Value="../../public_html/echo.bin" ApplyConventions="False"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
