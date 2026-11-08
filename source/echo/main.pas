@@ -6,7 +6,7 @@ interface
 
 uses
   fpjson,
-  Classes, SysUtils, fpcgi, HTTPDefs, fastplaz_handler, html_lib, database_lib;
+  Classes, SysUtils, fastplaz_app, HTTPDefs, fastplaz_handler, html_lib, database_lib;
 
 type
 
@@ -15,12 +15,16 @@ type
   TMainModule = class(TMyCustomWebModule)
   private
     procedure BeforeRequestHandler(Sender: TObject; ARequest: TRequest);
+    procedure EchoRequest;
   public
     constructor CreateNew(AOwner: TComponent; CreateMode: integer); override;
     destructor Destroy; override;
 
     procedure Get; override;
     procedure Post; override;
+    procedure Put; override;
+    procedure Patch; override;
+    procedure Delete; override;
   end;
 
 implementation
@@ -56,10 +60,11 @@ begin
   json['sitename'] := string(Config.GetValue('systems/sitename', ''));
 
   // GET
-  for i := 0 to Application.Request.QueryFields.Count - 1 do
+  for i := 0 to Request.QueryFields.Count - 1 do
   begin
-    s := Application.Request.QueryFields.Names[i];
-    json['GET/' + s] := _GET[s];
+    s := Request.QueryFields.Names[i];
+    if s <> '' then
+      json['GET/' + s] := _GET[s];
   end;
 
   json['time'] := i2s(TimeUsage) + 'ms';
@@ -67,10 +72,8 @@ begin
   json.Free;
 end;
 
-// POST Method Handler
-// CURL example:
-//   curl -X POST -H "Authorization: Basic dW5hbWU6cGFzc3dvcmQ=" "yourtargeturl"
-procedure TMainModule.Post;
+// Echo query string, form fields and raw body of a POST/PUT/PATCH/DELETE request
+procedure TMainModule.EchoRequest;
 var
   json: TJSONObject;
   jd: TJSONData;
@@ -81,33 +84,38 @@ begin
   json := TJSONObject.Create;
   json.Add('code', 0);
   json.Add('sitename', string(Config.GetValue('systems/sitename', '')));
+  json.Add('method', UpperCase(Request.Method));
 
   // GET
-  if Application.Request.QueryFields.Count > 0 then
+  if Request.QueryFields.Count > 0 then
   begin
     ji := TJSONObject.Create;
-    for i := 0 to Application.Request.QueryFields.Count - 1 do
+    for i := 0 to Request.QueryFields.Count - 1 do
     begin
-      s := Application.Request.QueryFields.Names[i];
-      if s <> '' then
+      s := Request.QueryFields.Names[i];
+      if (s <> '') and (ji.IndexOfName(s) < 0) then
         ji.Add(s, _GET[s]);
     end;
     if ji.Count > 0 then
-      json.Add('GET', ji);
+      json.Add('GET', ji)
+    else
+      ji.Free;
   end;
 
   // POST
-  if Application.Request.ContentFields.Count > 0 then
+  if Request.ContentFields.Count > 0 then
   begin
     ji := TJSONObject.Create;
-    for i := 0 to Application.Request.ContentFields.Count - 1 do
+    for i := 0 to Request.ContentFields.Count - 1 do
     begin
-      s := Application.Request.ContentFields.Names[i];
-      if s <> '' then
+      s := Request.ContentFields.Names[i];
+      if (s <> '') and (ji.IndexOfName(s) < 0) then
         ji.Add(s, _POST[s]);
     end;
     if ji.Count > 0 then
-      json.Add('POST', ji);
+      json.Add('POST', ji)
+    else
+      ji.Free;
   end;
 
   // REQUEST BODY
@@ -124,6 +132,36 @@ begin
 
   json.Add('time', i2s(TimeUsage) + 'ms');
   Response.Content := json.AsJSON;
+  json.Free;
+end;
+
+// POST Method Handler
+// CURL example:
+//   curl -X POST -H "Authorization: Basic dW5hbWU6cGFzc3dvcmQ=" "yourtargeturl"
+procedure TMainModule.Post;
+begin
+  EchoRequest;
+end;
+
+// PUT Method Handler
+//   curl -X PUT -H "Content-Type: application/json" -d '{"id":1}' "yourtargeturl"
+procedure TMainModule.Put;
+begin
+  EchoRequest;
+end;
+
+// PATCH Method Handler
+//   curl -X PATCH -d "name=value" "yourtargeturl"
+procedure TMainModule.Patch;
+begin
+  EchoRequest;
+end;
+
+// DELETE Method Handler
+//   curl -X DELETE "yourtargeturl?id=1"
+procedure TMainModule.Delete;
+begin
+  EchoRequest;
 end;
 
 
