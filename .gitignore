@@ -15,3 +15,6 @@ backup.sh
 *.log
 *.ses
 *.zip
+
+# compiled units (extra.cfg: -FUlib/$FPCTARGET/)
+source/echo/lib/*/
