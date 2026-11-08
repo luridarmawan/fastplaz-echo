@@ -15,12 +15,16 @@ type
   TMainModule = class(TMyCustomWebModule)
   private
     procedure BeforeRequestHandler(Sender: TObject; ARequest: TRequest);
+    procedure EchoRequest;
   public
     constructor CreateNew(AOwner: TComponent; CreateMode: integer); override;
     destructor Destroy; override;
 
     procedure Get; override;
     procedure Post; override;
+    procedure Put; override;
+    procedure Patch; override;
+    procedure Delete; override;
   end;
 
 implementation
@@ -68,10 +72,8 @@ begin
   json.Free;
 end;
 
-// POST Method Handler
-// CURL example:
-//   curl -X POST -H "Authorization: Basic dW5hbWU6cGFzc3dvcmQ=" "yourtargeturl"
-procedure TMainModule.Post;
+// Echo query string, form fields and raw body of a POST/PUT/PATCH/DELETE request
+procedure TMainModule.EchoRequest;
 var
   json: TJSONObject;
   jd: TJSONData;
@@ -82,6 +84,7 @@ begin
   json := TJSONObject.Create;
   json.Add('code', 0);
   json.Add('sitename', string(Config.GetValue('systems/sitename', '')));
+  json.Add('method', UpperCase(Request.Method));
 
   // GET
   if Request.QueryFields.Count > 0 then
@@ -130,6 +133,35 @@ begin
   json.Add('time', i2s(TimeUsage) + 'ms');
   Response.Content := json.AsJSON;
   json.Free;
+end;
+
+// POST Method Handler
+// CURL example:
+//   curl -X POST -H "Authorization: Basic dW5hbWU6cGFzc3dvcmQ=" "yourtargeturl"
+procedure TMainModule.Post;
+begin
+  EchoRequest;
+end;
+
+// PUT Method Handler
+//   curl -X PUT -H "Content-Type: application/json" -d '{"id":1}' "yourtargeturl"
+procedure TMainModule.Put;
+begin
+  EchoRequest;
+end;
+
+// PATCH Method Handler
+//   curl -X PATCH -d "name=value" "yourtargeturl"
+procedure TMainModule.Patch;
+begin
+  EchoRequest;
+end;
+
+// DELETE Method Handler
+//   curl -X DELETE "yourtargeturl?id=1"
+procedure TMainModule.Delete;
+begin
+  EchoRequest;
 end;
 
 
